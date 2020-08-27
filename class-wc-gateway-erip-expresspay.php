@@ -1,13 +1,15 @@
 <?php
 /*
-  Plugin Name: «Экспресс Платежи» для WooCommerce
+  Plugin Name: «Экспресс Платежи: ЕРИП» для WooCommerce
   Plugin URI: https://express-pay.by/cms-extensions/wordpress
   Description: «Экспресс Платежи» - плагин для интеграции с сервисом «Экспресс Платежи» (express-pay.by) через API. Плагин позволяет выставить счет в системе ЕРИП, получить и обработать уведомление о платеже в системе ЕРИП, выставлять счета для оплаты банковскими картами, получать и обрабатывать уведомления о платеже по банковской карте. Описание плагина доступно по адресу: <a target="blank" href="https://express-pay.by/cms-extensions/wordpress">https://express-pay.by/cms-extensions/wordpress</a>
-  Version: 3.0.2
+  Version: 1.0.0
   Author: ООО «ТриИнком»
   Author URI: https://express-pay.by/
+  License: GPLv2 or later
+  License URI: http://www.gnu.org/licenses/gpl-2.0.html
   WC requires at least: 2.6
-  WC tested up to: 3.7
+  WC tested up to: 4.3
  */
 
 if(!defined('ABSPATH')) exit;
@@ -23,12 +25,12 @@ function add_wordpress_erip_expresspay($methods) {
 }
 
 function init_gateway() {
-	if(!class_exists('WC_Payment_Gateway'))
+	if(!class_exists('WC_Payment_Gateway') or class_exists('Wordpress_Erip_Expresspay')) 
 		return;
 
 	add_filter('woocommerce_payment_gateways', 'add_wordpress_erip_expresspay');
 
-	load_plugin_textdomain("wordpress_erip_expresspay", false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
+	load_plugin_textdomain("wc_erip_expresspay", false, basename(dirname(__FILE__)) . '/languages');
 
 	class Wordpress_Erip_Expresspay extends WC_Payment_Gateway {
 		private $plugin_dir;
@@ -36,13 +38,13 @@ function init_gateway() {
 		public function __construct() {
 			$this->id = "expresspay_erip";
             $this->method_title = __('Экспресс Платежи: ЕРИП');
-            $this->method_description = __('Прием платежей в системе ЕРИП сервис «Экспресс Платежи»');
+            $this->method_description = __('Прием платежей в системе ЕРИП сервис «Экспресс Платежи»','wc_erip_expresspay');
 			$this->plugin_dir = plugin_dir_url(__FILE__);
 
 			$this->init_form_fields();
 			$this->init_settings();
 
-			$this->title = __("ЕРИП", 'wordpress_erip_expresspay');
+			$this->title = __("ЕРИП", 'wc_erip_expresspay');
 			$this->path_to_erip = $this->get_option('path_to_erip');
 			$this->service_id = $this->get_option('service_id');
 			$this->secret_word = $this->get_option('secret_key');
@@ -67,14 +69,14 @@ function init_gateway() {
 
 		public function admin_options() {
 			?>
-			<h3><?php _e('«Экспресс Платежи: ЕРИП»', 'wordpress_erip_expresspay'); ?></h3>
+			<h3><?php _e('«Экспресс Платежи: ЕРИП»', 'wc_erip_expresspay'); ?></h3>
             <div style="float: left; display: inline-block;">
                  <a target="_blank" href="https://express-pay.by"><img src="<?php echo $this->plugin_dir; ?>assets/images/erip_expresspay_big.png" width="270" height="91" alt="exspress-pay.by" title="express-pay.by"></a>
             </div>
             <div style="margin-left: 6px; margin-top: 15px; display: inline-block;">
 				<?php _e('«Экспресс Платежи: ЕРИП» - плагин для интеграции с сервисом «Экспресс Платежи» (express-pay.by) через API. 
 				<br/>Плагин позволяет выставить счет в системе ЕРИП, получить и обработать уведомление о платеже в системе ЕРИП.
-				<br/>Описание плагина доступно по адресу: ', 'wordpress_erip_expresspay'); ?><a target="blank" href="https://express-pay.by/cms-extensions/wordpress#woocommerce_2_x">https://express-pay.by/cms-extensions/wordpress#woocommerce_2_x</a>
+				<br/>Описание плагина доступно по адресу: ', 'wc_erip_expresspay'); ?><a target="blank" href="https://express-pay.by/cms-extensions/wordpress#woocommerce_4_x">https://express-pay.by/cms-extensions/wordpress#woocommerce_4_x</a>
             </div>
 
 			<table class="form-table">
@@ -83,8 +85,8 @@ function init_gateway() {
 				?>
 			</table>
 			<div class="copyright" style="text-align: center;">
-				<?php _e("© Все права защищены | ООО «ТриИнком»,", 'wordpress_erip_expresspay'); ?> 2013-<?php echo date("Y"); ?><br/>
-				<?php echo __('Версия', 'wordpress_erip_expresspay') . " " . ERIP_EXPRESSPAY_VERSION ?>			
+				<?php _e("© Все права защищены | ООО «ТриИнком»,", 'wc_erip_expresspay'); ?> 2013-<?php echo date("Y"); ?><br/>
+				<?php echo __('Версия', 'wc_erip_expresspay') . " " . ERIP_EXPRESSPAY_VERSION ?>			
 			</div>
 			<?php
 		}
@@ -92,93 +94,93 @@ function init_gateway() {
 		function init_form_fields() {
 			$this->form_fields = array(
 				'enabled' => array(
-					'title'   => __('Включить/Выключить', 'wordpress_erip_expresspay'),
+					'title'   => __('Включить/Выключить', 'wc_erip_expresspay'),
 					'type'    => 'checkbox',
 					'default' => 'no'
 				),
 				'token' => array(
-					'title'   => __('Токен', 'wordpress_erip_expresspay'),
+					'title'   => __('Токен', 'wc_erip_expresspay'),
 					'type'    => 'text',
-					'description' => __('Генерирутся в панели express-pay.by', 'wordpress_erip_expresspay'),
+					'description' => __('Генерирутся в панели express-pay.by', 'wc_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'service_id' => array(
-					'title'   => __('Номер услуги', 'wordpress_erip_expresspay'),
+					'title'   => __('Номер услуги', 'wc_erip_expresspay'),
 					'type'    => 'text',
-					'description' => __('Номер услуги в express-pay.by', 'wordpress_erip_expresspay'),
+					'description' => __('Номер услуги в express-pay.by', 'wc_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'handler_url' => array(
-					'title'   => __('Адрес для уведомлений', 'wordpress_erip_expresspay'),
+					'title'   => __('Адрес для уведомлений', 'wc_erip_expresspay'),
 					'type'    => 'text',
 					'css' => 'display: none;',
 					'description' => get_site_url() . '/?wc-api=wordpress_erip_expresspay&action=notify'
 				),
 				'secret_key' => array(
-					'title'   => __('Секретное слово для подписи счетов', 'wordpress_erip_expresspay'),
+					'title'   => __('Секретное слово для подписи счетов', 'wc_erip_expresspay'),
 					'type'    => 'text',
 					'description' => __('Секретного слово, которое известно только серверу и клиенту. Используется для формирования цифровой подписи. Задается в панели express-pay.by', 'wordpress_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'is_use_signature_notify' => array(
-					'title'   => __('Использовать цифровую подпись для уведомлений', 'wordpress_erip_expresspay'),
+					'title'   => __('Использовать цифровую подпись для уведомлений', 'wc_erip_expresspay'),
 					'type'    => 'checkbox',
-					'description' => __('Использовать цифровую подпись для уведомлений', 'wordpress_erip_expresspay'),
+					'description' => __('Использовать цифровую подпись для уведомлений', 'wc_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'secret_key_norify' => array(
-					'title'   => __('Секретное слово для подписи уведомлений', 'wordpress_erip_expresspay'),
+					'title'   => __('Секретное слово для подписи уведомлений', 'wc_erip_expresspay'),
 					'type'    => 'text',
 					'description' => __('Секретного слово, которое известно только серверу и клиенту. Используется для формирования цифровой подписи. Задается в панели express-pay.by', 'wordpress_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'show_qr_code' => array(
-					'title'   => __('Показывать QR код для оплаты', 'wordpress_erip_expresspay'),
+					'title'   => __('Показывать QR код для оплаты', 'wc_erip_expresspay'),
 					'type'    => 'checkbox',
-					'description' => __('Показывать QR код для оплаты', 'wordpress_erip_expresspay'),
+					'description' => __('Показывать QR код для оплаты', 'wc_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'name_editable' => array(
-					'title'   => __('Разрешено изменять ФИО плательщика', 'wordpress_erip_expresspay'),
+					'title'   => __('Разрешено изменять ФИО плательщика', 'wc_erip_expresspay'),
 					'type'    => 'checkbox',
-					'description' => __('Разрешается при оплате счета изменять ФИО плательщика', 'wordpress_erip_expresspay'),
+					'description' => __('Разрешается при оплате счета изменять ФИО плательщика', 'wc_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'address_editable' => array(
-					'title'   => __('Разрешено изменять адрес плательщика', 'wordpress_erip_expresspay'),
+					'title'   => __('Разрешено изменять адрес плательщика', 'wc_erip_expresspay'),
 					'type'    => 'checkbox',
-					'description' => __('Разрешается при оплате счета изменять адрес плательщика', 'wordpress_erip_expresspay'),
+					'description' => __('Разрешается при оплате счета изменять адрес плательщика', 'wc_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'amount_editable' => array(
-					'title'   => __('Разрешено изменять сумму оплаты', 'wordpress_erip_expresspay'),
+					'title'   => __('Разрешено изменять сумму оплаты', 'wc_erip_expresspay'),
 					'type'    => 'checkbox',
-					'description' => __('Разрешается при оплате счета изменять сумму платежа', 'wordpress_erip_expresspay'),
+					'description' => __('Разрешается при оплате счета изменять сумму платежа', 'wc_erip_expresspay'),
 					'desc_tip'    => true
 				),
 				'send_client_email' => array(
-					'title'   => __('Отправлять email-уведомление клиенту', 'wordpress_erip_expresspay'),
+					'title'   => __('Отправлять email-уведомление клиенту', 'wc_erip_expresspay'),
 					'type'    => 'checkbox'
 				),
 				'test_mode' => array(
-					'title'   => __('Использовать тестовый режим', 'wordpress_erip_expresspay'),
+					'title'   => __('Использовать тестовый режим', 'wc_erip_expresspay'),
 					'type'    => 'checkbox'
 				),
 				'url_api' => array(
-					'title'   => __('Адрес API', 'wordpress_erip_expresspay'),
+					'title'   => __('Адрес API', 'wc_erip_expresspay'),
 					'type'    => 'text',
 					'default' => 'https://api.express-pay.by'
 				),
 				'url_sandbox_api' => array(
-					'title'   => __('Адрес тестового API', 'wordpress_erip_expresspay'),
+					'title'   => __('Адрес тестового API', 'wc_erip_expresspay'),
 					'type'    => 'text',
 					'default' => 'https://sandbox-api.express-pay.by'
 				),
 				'path_to_erip' => array(
-					'title'   => __('Путь к ЕРИП', 'wordpress_erip_expresspay'),
-					'description' => __('Путь по ветке ЕРИП который записан в личном кабинете express-pay.by', 'wordpress_erip_expresspay'),
+					'title'   => __('Путь к ЕРИП', 'wc_erip_expresspay'),
+					'description' => __('Путь по ветке ЕРИП который записан в личном кабинете express-pay.by', 'wc_erip_expresspay'),
 					'type'    => 'textarea',
-					'default' => __('Интернет-магазины\Сервисы -> "Первая буква доменного имени интернет-магазина" -> "Доменное имя интернет-магазина"', 'wordpress_erip_expresspay'),
+					'default' => __('Интернет-магазины\Сервисы -> "Первая буква доменного имени интернет-магазина" -> "Доменное имя интернет-магазина"', 'wc_erip_expresspay'),
 					'css'	  => 'min-height: 160px;'
 				)
 			);
@@ -272,7 +274,7 @@ function init_gateway() {
 
 			$woocommerce->cart->empty_cart();
 
-			$order->update_status('pending', __('Счет успешно выставлен и ожидает оплаты', 'wordpress_erip_expresspay'));
+			$order->update_status('pending', __('Счет успешно выставлен и ожидает оплаты', 'wc_erip_expresspay'));
 
 			$message_success = '<h3>Счет добавлен в систему ЕРИП для оплаты </h3><h4>Ваш номер заказа: ##order_id##</h4><br/>Вам необходимо произвести платеж в любой системе, позволяющей проводить оплату через ЕРИП (пункты банковского обслуживания, банкоматы, платежные терминалы, системы интернет-банкинга, клиент-банкинга и т.п.).<br/>1. Для этого в перечне услуг ЕРИП перейдите в раздел:<br/><b>##erip_path##</b><br/>2. Далее введите номер заказа <b>##order_id##</b> и нажмите "Продолжить"<br/>3. Проверить корректность информации<br/>4. Совершить платеж.';
 
