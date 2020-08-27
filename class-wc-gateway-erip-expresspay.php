@@ -14,7 +14,7 @@
 
 if(!defined('ABSPATH')) exit;
 
-define("ERIP_EXPRESSPAY_VERSION", "3.0.2");
+define("ERIP_EXPRESSPAY_VERSION", "1.0.0");
 
 add_action('plugins_loaded', 'init_gateway', 0);
 
@@ -44,7 +44,7 @@ function init_gateway() {
 			$this->init_form_fields();
 			$this->init_settings();
 
-			$this->title = __("ЕРИП", 'wc_erip_expresspay');
+			$this->title = __("Экспресс Платежи: ЕРИП", 'wc_erip_expresspay');
 			$this->path_to_erip = $this->get_option('path_to_erip');
 			$this->service_id = $this->get_option('service_id');
 			$this->secret_word = $this->get_option('secret_key');
