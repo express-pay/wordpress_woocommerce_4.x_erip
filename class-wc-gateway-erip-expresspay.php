@@ -433,8 +433,8 @@ function init_gateway() {
 	        if(isset($data->CmdType)) {
 	        	switch ($data->CmdType) {
 	        		case '1':
-	                    $order->update_status('processing', __('Счет успешно оплачен', 'wordpress_erip_expresspay'));
-	                    $this->log_info('notify_success', 'Initialization to update status. STATUS ID - Счет успешно оплачен; RESPONSE - ' . $dataJSON);
+	                    $order->update_status('pending_payment', __('Счет ожидает оплаты', 'wordpress_erip_expresspay'));
+	                    $this->log_info('notify_success', 'Initialization to update status. STATUS ID - Счет ожидает оплаты; RESPONSE - ' . $dataJSON);
 
 	        			break;
 	        		case '2':
@@ -442,17 +442,28 @@ function init_gateway() {
 						$this->log_info('notify_success', 'Initialization to update status. STATUS ID - Платеж отменён; RESPONSE - '. $dataJSON);
 
 	        			break;
-                    case '3':
-                        if($data->Status === '2'){
-                        
+					case '3':
+						if($data->Status == '1'){
+                            $order->update_status('pending_payment', __('Счет ожидает оплаты', 'wordpress_erip_expresspay'));
+                            $this->log_info('notify_success', 'Initialization to update status. STATUS ID - Счет ожидает оплаты; RESPONSE - '. $dataJSON);
+						}
+                        elseif($data->Status == '2'){
                             $order->update_status('cancelled', __('Счет просрочен', 'wordpress_erip_expresspay'));
                             $this->log_info('notify_success', 'Initialization to update status. STATUS ID - Счет просрочен; RESPONSE - '. $dataJSON);
-                            
 						}
-						elseif($data->Status === '5'){
+						elseif($data->Status == '3'){
+                            $order->update_status('processing', __('Счет оплачен', 'wordpress_erip_expresspay'));
+                            $this->log_info('notify_success', 'Initialization to update status. STATUS ID - Счет оплачен; RESPONSE - '. $dataJSON);
+                        }
+						elseif($data->Status == '5'){
                         
                             $order->update_status('cancelled', __('Счет отменен', 'wordpress_erip_expresspay'));
                             $this->log_info('notify_success', 'Initialization to update status. STATUS ID - Счет отменен; RESPONSE - '. $dataJSON);
+						}
+						elseif($data->Status == '6'){
+                        
+                            $order->update_status('processing', __('Счет оплачен картой', 'wordpress_erip_expresspay'));
+                            $this->log_info('notify_success', 'Initialization to update status. STATUS ID - Счет оплачен картой; RESPONSE - '. $dataJSON);
                         }
 	        			break;
 	        		default:
